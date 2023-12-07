@@ -14,6 +14,8 @@ function App() {
   const [showTradeInput, setShowTradeInput] = useState(false);
   const [showTradeHistory, setShowTradeHistory] = useState(false);
   const [winPercentage, setWinPercentage] = useState('0.00');
+  const [filterDate, setFilterDate] = useState('');
+
 
 
   const handleLogout = () => {
@@ -62,17 +64,25 @@ function App() {
     setShowTradeInput(false);
   };
   
-  const fetchTrades = async (userId) => {
-    const q = query(collection(db, "trades"), where("userId", "==", userId));
+  const fetchTrades = async (userId, filterDate = '') => {
+    let q = query(collection(db, "trades"), where("userId", "==", userId));
+  
+    if (filterDate) {
+      // Assuming dates in Firestore are stored as 'YYYY-MM-DD' strings
+      // or as JavaScript Date objects
+      q = query(q, where("date", "==", filterDate));
+    }
+  
     const querySnapshot = await getDocs(q);
     const fetchedTrades = [];
     querySnapshot.forEach((doc) => {
-      // Store each trade's Firestore document ID
       fetchedTrades.push({ id: doc.id, ...doc.data() });
     });
     setTrades(fetchedTrades);
     setWinPercentage(calculateWinPercentage(fetchedTrades));
   };
+  
+  
   
 
   const deleteTrade = async (tradeId) => {
@@ -108,7 +118,13 @@ function App() {
           {showTradeHistory && (
             <div>
               <h2>Trade History</h2>
-              <p>Win Percentage: {winPercentage}% </p>
+              <input
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+              />
+              <button onClick={() => fetchTrades(auth.currentUser.uid, filterDate)}>Filter</button>
+              <p>Win Percentage: {winPercentage}%</p>
               {trades.map((trade) => (
                 <div key={trade.id}>
                   <p>{`${trade.tradePair}: ${trade.outcome}`}</p>
@@ -126,6 +142,7 @@ function App() {
       )}
     </div>
   );
+  
   
 }
 
