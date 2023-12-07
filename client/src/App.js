@@ -4,7 +4,8 @@ import Login from './login';
 import Registration from './registration';
 import Home from './Home';
 import TradeInput from './TradeInput';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
+
 
 
 function App() {
@@ -12,15 +13,20 @@ function App() {
   const [trades, setTrades] = useState([]);
   const [showTradeInput, setShowTradeInput] = useState(false);
   const [showTradeHistory, setShowTradeHistory] = useState(false);
+  const [winPercentage, setWinPercentage] = useState('0.00');
+
 
   const handleLogout = () => {
     setIsLoggedIn(false);
   };
 
   const addTrade = (trade) => {
-    setTrades([...trades, trade]);
-    setShowTradeInput(false); // Hide trade input form after adding a trade
+    const updatedTrades = [...trades, trade];
+    setTrades(updatedTrades);
+    setWinPercentage(calculateWinPercentage(updatedTrades));
+    setShowTradeInput(false);
   };
+  
 
   const handleAddTradeClick = () => {
     setShowTradeInput(true);
@@ -43,10 +49,32 @@ function App() {
     const querySnapshot = await getDocs(q);
     const fetchedTrades = [];
     querySnapshot.forEach((doc) => {
-      fetchedTrades.push(doc.data());
+      // Store each trade's Firestore document ID
+      fetchedTrades.push({ id: doc.id, ...doc.data() });
     });
     setTrades(fetchedTrades);
+    setWinPercentage(calculateWinPercentage(fetchedTrades));
   };
+  
+
+  const deleteTrade = async (tradeId) => {
+    try {
+      // Delete the trade from Firestore
+      await deleteDoc(doc(db, "trades", tradeId));
+  
+      // Update the local state to remove the trade
+      setTrades(trades.filter(trade => trade.id !== tradeId));
+    } catch (error) {
+      console.error("Error deleting trade: ", error);
+    }
+  };
+
+  const calculateWinPercentage = (trades) => {
+    const totalTrades = trades.length;
+    const totalWins = trades.filter(trade => trade.outcome === 'win').length;
+    return totalTrades > 0 ? (totalWins / totalTrades * 100).toFixed(2) : '0.00';
+  };
+  
   
 
   return (
@@ -62,8 +90,12 @@ function App() {
           {showTradeHistory && (
             <div>
               <h2>Trade History</h2>
-              {trades.map((trade, index) => (
-                <p key={index}>{`${trade.tradePair}: ${trade.outcome}`}</p>
+              <p>Win Percentage: {winPercentage}% </p>
+              {trades.map((trade) => (
+                <div key={trade.id}>
+                  <p>{`${trade.tradePair}: ${trade.outcome}`}</p>
+                  <button onClick={() => deleteTrade(trade.id)}>Delete</button>
+                </div>
               ))}
             </div>
           )}
@@ -76,6 +108,7 @@ function App() {
       )}
     </div>
   );
+  
 }
 
 export default App;
