@@ -8,30 +8,29 @@ import { auth } from './firebase';
 const TradeInput = ({ onAddTrade }) => {
   const [tradePair, setTradePair] = useState('');
   const [outcome, setOutcome] = useState('');
+  const [tradeDate, setTradeDate] = useState('');
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const user = auth.currentUser; // Get the currently logged-in user
   
     if (user) {
-      try {
-        await addDoc(collection(db, "trades"), {
-          userId: user.uid, // Use the user's unique ID
-          tradePair,
-          outcome
-        });
-        onAddTrade({ tradePair, outcome }); // Optionally update local state
-      } catch (error) {
-        console.error("Error adding document: ", error);
-      }
+      onAddTrade({ 
+        userId: user.uid, 
+        tradePair, 
+        outcome, 
+        date: tradeDate // Include the trade date
+      }); // Pass the trade data to App.js
     } else {
       console.error("No user logged in");
     }
   
     setTradePair('');
     setOutcome('');
+    setTradeDate(''); // Reset the date as well
   };
-  
+
   
 
   return (
@@ -48,6 +47,12 @@ const TradeInput = ({ onAddTrade }) => {
         <option value="win">Win</option>
         <option value="loss">Loss</option>
       </select>
+      <input
+      type="date"
+      value={tradeDate}
+      onChange={(e) => setTradeDate(e.target.value)}
+      required
+    />
       <button type="submit">Add Trade</button>
     </form>
   );

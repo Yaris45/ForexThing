@@ -4,7 +4,7 @@ import Login from './login';
 import Registration from './registration';
 import Home from './Home';
 import TradeInput from './TradeInput';
-import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, addDoc, getDocs, doc, deleteDoc } from 'firebase/firestore';
 
 
 
@@ -20,12 +20,30 @@ function App() {
     setIsLoggedIn(false);
   };
 
-  const addTrade = (trade) => {
-    const updatedTrades = [...trades, trade];
-    setTrades(updatedTrades);
-    setWinPercentage(calculateWinPercentage(updatedTrades));
-    setShowTradeInput(false);
+  const addTrade = async (trade) => {
+    const user = auth.currentUser; // Get the currently logged-in user
+    if (user) {
+      try {
+        // Add the new trade to Firestore
+        const docRef = await addDoc(collection(db, "trades"), {
+          ...trade, // This includes tradePair, outcome, and date
+          userId: user.uid // Attach the user's ID to the trade
+        });
+        console.log("Trade added successfully");
+  
+        // Update the local state with the new trade, including Firestore document ID
+        const updatedTrades = [...trades, { ...trade, id: docRef.id }];
+        setTrades(updatedTrades);
+        setWinPercentage(calculateWinPercentage(updatedTrades));
+        setShowTradeInput(false);
+      } catch (error) {
+        console.error("Error adding trade: ", error);
+      }
+    } else {
+      console.error("No user logged in");
+    }
   };
+  
   
 
   const handleAddTradeClick = () => {
