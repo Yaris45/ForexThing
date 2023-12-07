@@ -1,8 +1,9 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from 'firebase/firestore';
 
-// TODO: Replace the following with your app's Firebase project configuration
+
 const firebaseConfig = {
     apiKey: "AIzaSyB2KlFGgswR940E_sf2h-uVhwGhwV5jzZU",
     authDomain: "marketmatefx.firebaseapp.com",
@@ -19,4 +20,7 @@ const app = initializeApp(firebaseConfig);
 // Get a reference to the authentication service
 const auth = getAuth(app);
 
-export { auth };
+// Initialize Firestore
+const db = getFirestore(app);
+
+export { auth, db };

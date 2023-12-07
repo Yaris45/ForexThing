@@ -1,10 +1,12 @@
 import React from 'react';
 
-const Home = () => {
+const Home = ({ onAddTradeClick, onViewHistoryClick, onLogout }) => {
   return (
     <div>
-      <h1>Welcome to MarketMateFX</h1>
-      <p>This is the home page.</p>
+      <h1>Home Page</h1>
+      <button onClick={onAddTradeClick}>Add Trade</button>
+      <button onClick={onViewHistoryClick}>Trade History</button>
+      <button onClick={onLogout}>Logout</button>
     </div>
   );
 };
