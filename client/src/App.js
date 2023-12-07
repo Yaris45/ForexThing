@@ -1,14 +1,21 @@
-import React from 'react';
-import Login from './login'; // Adjust the path if necessary
-import Registration from './registration'; // Adjust the path if necessary
-import './App.css';
+import React, { useState } from 'react';
+import Login from './login';
+import Registration from './registration';
+import Home from './Home';
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   return (
     <div className="App">
-      <h1>Welcome to MarketMateFX</h1>
-      <Login />
-      <Registration />
+      {isLoggedIn ? (
+        <Home />
+      ) : (
+        <>
+          <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+          <Registration />
+        </>
+      )}
     </div>
   );
 }

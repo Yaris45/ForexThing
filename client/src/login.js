@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { auth } from './firebase'; // Update the path if necessary
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
-const Login = () => {
+const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -13,6 +14,7 @@ const Login = () => {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      onLoginSuccess();
       // Handle successful login
       // Add any additional logic needed after successful login here
     } catch (error) {
